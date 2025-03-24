@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using DAL.DataContext;
 using DOMAIN.Interface;
 using DOMAIN.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace DAL.Services.Repository;
 public class TransactionRepo : ITransactionRepo
@@ -23,6 +24,7 @@ public class TransactionRepo : ITransactionRepo
         {
             transaction.TransDate = DateTime.Now;
             transaction.Status = "Complete";
+            transaction.Type = "Deposit";
             transaction.UserId = UserId;
             await _appDbContext.Transactions.AddAsync(transaction);
             await _appDbContext.SaveChangesAsync();
@@ -33,7 +35,36 @@ public class TransactionRepo : ITransactionRepo
             throw ex;
         }
     }
-    Task<List<Transaction>> ITransactionRepo.GetTransaction(Transaction transaction, int UserId) => throw new NotImplementedException();
+    public async Task<List<Transaction>> GetTransaction(Transaction transaction, int UserId)
+    {
+        try
+        {
+            var result = await _appDbContext.Transactions
+                .OrderBy(x => x.TransDate)
+                .Where(x => x.UserId == UserId).ToListAsync();
+            return result;
+        }
+        catch (Exception ex)
+        {
+            throw ex;
+        }
+    }
     Task<bool> ITransactionRepo.SetReminder(Transaction transaction, int UserId) => throw new NotImplementedException();
-    Task<bool> ITransactionRepo.WithDraw(Transaction transaction, int UserId) => throw new NotImplementedException();
+    public async Task<bool> WithDraw(Transaction transaction, int UserId)
+    {
+        try
+        {
+            transaction.TransDate = DateTime.Now;
+            transaction.Status = "Complete";
+            transaction.Type = "Withdraw";
+            transaction.UserId = UserId;
+            await _appDbContext.Transactions.AddAsync(transaction);
+            await _appDbContext.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            throw ex;
+        }
+    }
 }
