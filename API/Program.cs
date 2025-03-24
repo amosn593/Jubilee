@@ -1,4 +1,8 @@
-﻿using Scalar.AspNetCore;
+﻿using System;
+using DAL.DataContext;
+using DOMAIN.Models;
+using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +11,16 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+builder.Services.AddHttpClient("Mpesa", httpClient =>
+{
+    httpClient.BaseAddress = new Uri("https://sandbox.safaricom.co.ke");
+});
+
+builder.Services.Configure<MpesaSetting>(builder.Configuration.GetSection("MpesaSetting"));
+
+builder.Services.AddDbContext<AppDbContext>(
+        options => options.UseSqlite("name=ConnectionStrings:DefaultConnection"));
 
 var app = builder.Build();
 
