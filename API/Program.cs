@@ -3,6 +3,7 @@ using DAL.DataContext;
 using DAL.Services.Repository;
 using DOMAIN.Interface;
 using DOMAIN.Models;
+using DOMAIN.Utilities;
 using Hangfire;
 using Hangfire.MySql;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,10 @@ builder.Services.AddHttpClient("Mpesa", httpClient =>
 });
 
 builder.Services.Configure<MpesaSetting>(builder.Configuration.GetSection("MpesaSetting"));
+builder.Services.AddScoped<IAuthentication, AuthenticationRepo>();
+builder.Services.AddScoped<Itoken, JwtServices>();
+
+builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("JwtOptions"));
 
 var connstring = builder.Configuration.GetConnectionString("DefaultConnection");
 
