@@ -3,6 +3,8 @@ using DAL.DataContext;
 using DAL.Services.Repository;
 using DOMAIN.Interface;
 using DOMAIN.Models;
+using Hangfire;
+using Hangfire.MySql;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Scalar.AspNetCore;
@@ -31,6 +33,19 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         ServerVersion.AutoDetect(connstring)
     );
 });
+
+// Add Hangfire services
+builder.Services.AddHangfire(config =>
+    config.UseStorage(
+        new MySqlStorage(
+            builder.Configuration.GetConnectionString("HangfireConnection"),
+            new MySqlStorageOptions
+            {
+                //TablePrefix = "Hangfire", // Optional table prefix
+                QueuePollInterval = TimeSpan.FromSeconds(15) // Polling interval
+            })
+    ));
+builder.Services.AddHangfireServer();
 
 //builder.Services.AddDbContext<AppDbContext>(
 //        options => options.UseSqlite("name=ConnectionStrings:DefaultConnection")

@@ -18,4 +18,5 @@ public class AppDbContext : DbContext
     public DbSet<AccessTokenResponse> AccessTokenResponses { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Transaction> Transactions { get; set; }
+    public DbSet<SMSConfigModel> SMSConfigModels { get; set; }
 }
