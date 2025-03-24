@@ -51,8 +51,13 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
+else
+{
+    app.MapOpenApi();
+    app.MapScalarApiReference();
+}
 
-app.UseHttpsRedirection();
+    app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
