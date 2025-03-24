@@ -7,4 +7,6 @@ using System.Threading.Tasks;
 namespace DOMAIN.Models.Dtos;
 public class LoginResponseDto
 {
+    public string Token { get; set; }
+    public User user { get; set; }
 }
