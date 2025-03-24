@@ -11,6 +11,7 @@ public interface ITransactionRepo
 {
     Task<bool> Deposit(TransactionDto transaction, int UserId);
     Task<bool> WithDraw(TransactionDto transaction, int UserId);
-    Task<bool> SetReminder(Transaction transaction, int UserId);
+    Task<bool> SetReminder(TransactionDto transactionDto, int UserId);
+    Task<bool> RunReminder(TransactionDto transactionDto, int UserId);
     Task<List<Transaction>> GetTransaction(int UserId);
 }

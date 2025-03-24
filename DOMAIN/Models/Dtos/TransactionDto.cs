@@ -14,5 +14,5 @@ public class TransactionDto
     public int? UserId { get; set; }
     public bool SetReminders { get; set; } = false;
     public int? Frequency { get; set; } = 7;
-    public DateTime StartDate { get; set; } 
+    public DateTime? StartDate { get; set; } = DateTime.Now;
 }

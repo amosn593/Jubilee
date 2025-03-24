@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
+﻿using Hangfire;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using DAL.DataContext;
 using DOMAIN.Interface;
 using DOMAIN.Models;
@@ -141,7 +136,23 @@ public class TransactionRepo : ITransactionRepo
             throw ex;
         }
     }
-    public async Task<bool> SetReminder(Transaction transaction, int UserId) => throw new NotImplementedException();
+    public async Task<bool> SetReminder(TransactionDto transactionDto, int UserId)
+    {
+        try
+        {
+            var TimeToFire = DateTime.UtcNow.AddSeconds(5);
+            var TimeOffset = new DateTimeOffset(TimeToFire);
+
+
+            BackgroundJob.Schedule<JobsWithDI>(x => x.WriteLogMessage("Scheduled Job Triggered"), TimeOffset);
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            return false;
+        }
+    }
     public async Task<bool> WithDraw(TransactionDto transaction, int UserId)
     {
         try
@@ -163,6 +174,18 @@ public class TransactionRepo : ITransactionRepo
         catch (Exception ex)
         {
             throw ex;
+        }
+    }
+
+    public async Task<bool> RunReminder(TransactionDto transactionDto, int UserId)
+    {
+        try
+        {
+            return true;
+        }
+        catch (Exception ex)
+        {
+            return false;
         }
     }
 }
