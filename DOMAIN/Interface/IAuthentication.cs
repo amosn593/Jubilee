@@ -9,7 +9,7 @@ using DOMAIN.Models.Dtos;
 namespace DOMAIN.Interface;
 public interface IAuthentication
 {
-    Task<string> RegisterUser(User RegisterUser);
+    Task<User> RegisterUser(User RegisterUser);
     Task<LoginResponseDto> LoginUser();
     Task<User> GetUserById(Guid Id);
     Task<User> GetUserByEmail(string Email);
