@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DAL.Models;
+namespace DOMAIN.Models;
 public class User
 {
     [Key]

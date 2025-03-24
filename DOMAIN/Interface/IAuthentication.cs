@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DAL.Models;
-using DAL.Models.Dtos;
+using DOMAIN.Models;
+using DOMAIN.Models.Dtos;
 
-namespace DAL.Services.Interface;
+namespace DOMAIN.Interface;
 public interface IAuthentication
 {
     Task<string> RegisterUser(User RegisterUser);

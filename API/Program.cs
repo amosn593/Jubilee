@@ -1,7 +1,10 @@
 ﻿using System;
 using DAL.DataContext;
+using DAL.Services.Repository;
+using DOMAIN.Interface;
 using DOMAIN.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,8 +22,26 @@ builder.Services.AddHttpClient("Mpesa", httpClient =>
 
 builder.Services.Configure<MpesaSetting>(builder.Configuration.GetSection("MpesaSetting"));
 
-builder.Services.AddDbContext<AppDbContext>(
-        options => options.UseSqlite("name=ConnectionStrings:DefaultConnection"));
+var connstring = builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+{
+    options.UseMySql(
+        connstring,
+        ServerVersion.AutoDetect(connstring)
+    );
+});
+
+//builder.Services.AddDbContext<AppDbContext>(
+//        options => options.UseSqlite("name=ConnectionStrings:DefaultConnection")
+//        options.UseMySql(
+//        connstring,
+//        ServerVersion.AutoDetect(connstring)
+//    );
+//        );
+
+builder.Services.AddScoped<ITransactionRepo, TransactionRepo>();
+
 
 var app = builder.Build();
 

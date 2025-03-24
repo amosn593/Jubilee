@@ -14,4 +14,6 @@ public class Transaction
     public DateTime TransDate { get; set; }
     public decimal Amount { get; set; } = 0;
     public string? Status { get; set; } = "Complete";
+    public int? UserId { get; set; }
+    public User? user { get; set; }
 }

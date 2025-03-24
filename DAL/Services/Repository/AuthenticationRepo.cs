@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DAL.Models;
-using DAL.Models.Dtos;
-using DAL.Services.Interface;
+using DOMAIN.Interface;
+using DOMAIN.Models;
+using DOMAIN.Models.Dtos;
 
 namespace DAL.Services.Repository;
 public class AuthenticationRepo : IAuthentication

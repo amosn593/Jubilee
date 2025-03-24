@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DAL.Models.Dtos;
+namespace DOMAIN.Models.Dtos;
 public class LoginUserDto
 {
     public string Email { get; set; }
