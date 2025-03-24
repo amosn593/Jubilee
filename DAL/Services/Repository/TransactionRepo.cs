@@ -1,32 +1,124 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using DAL.DataContext;
 using DOMAIN.Interface;
 using DOMAIN.Models;
+using DOMAIN.Models.Dtos;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace DAL.Services.Repository;
 public class TransactionRepo : ITransactionRepo
 {
     private readonly AppDbContext _appDbContext;
+    private readonly MpesaSetting _options;
+    private readonly HttpClient _httpClient;
 
-    public TransactionRepo(AppDbContext appDbContext)
+
+    public TransactionRepo(AppDbContext appDbContext,
+        IHttpClientFactory httpClientFactory, IOptions<MpesaSetting> options)
     {
         _appDbContext = appDbContext;
+        _options = options.Value;
+        _httpClient = httpClientFactory.CreateClient("Mpesa");
     }
 
-    public async Task<bool> Deposit(Transaction transaction, int UserId)
+    public async Task<bool> Deposit(TransactionDto transaction, int UserId)
     {
         try
         {
-            transaction.TransDate = DateTime.Now;
-            transaction.Status = "Complete";
-            transaction.Type = "Deposit";
-            transaction.UserId = UserId;
-            await _appDbContext.Transactions.AddAsync(transaction);
+            //Add Basic Auth
+            var authenticationString = $"{_options.ConsumerKey}:{_options.ConsumerSecret}";
+
+            var tokenB64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(authenticationString));
+
+            //Check In Db If there is access Token
+            var AccessToken = await _appDbContext.AccessTokenResponses
+                .OrderByDescending(x => x.Id).FirstOrDefaultAsync();
+
+            if (AccessToken == null || AccessToken.ExpireDate < DateTime.Now)
+            {
+                //Make call
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", tokenB64);
+
+                var Response = await _httpClient.GetAsync("/oauth/v1/generate?grant_type=client_credentials");
+
+                var ResponseContent = await Response.Content.ReadFromJsonAsync<AccessTokenResponse>();
+
+
+                //Remove Current Token
+
+                if (AccessToken != null)
+                {
+                    _appDbContext.AccessTokenResponses.Remove(AccessToken);
+                }
+
+                ResponseContent!.CreatedDate = DateTime.Now;
+                ResponseContent.ExpireDate = DateTime.Now.AddSeconds((double)ResponseContent.expires_in!);
+
+                await _appDbContext.AccessTokenResponses.AddAsync(ResponseContent);
+
+                await _appDbContext.SaveChangesAsync();
+
+                //Return results
+                AccessToken = ResponseContent;
+            }
+
+
+            //Get Token
+            var Token = AccessToken;
+
+            //Create New Instance of STKPush model and get password
+            var stkPush = new StkPushModel
+            {
+                Timestamp = DateTime.Now.ToString("yyyyMMddHHmmss"),
+                PartyB = _options.BusinessShortCode,
+                BusinessShortCode = _options.BusinessShortCode,
+                PartyA = transaction.PhoneNumber,
+            };
+
+            var plainTextBytes = Encoding.UTF8.GetBytes(stkPush.BusinessShortCode + $"{_options.PassKey}" + stkPush.Timestamp);
+
+            stkPush.Password = Convert.ToBase64String(plainTextBytes);
+
+            //Serialize data
+            // Serialize the data to JSON
+            var json = JsonSerializer.Serialize(stkPush);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token.access_token);
+
+            var ResponseApi = await _httpClient.PostAsync("/mpesa/stkpush/v1/processrequest", content);
+
+            if (!ResponseApi.IsSuccessStatusCode)
+            {
+                throw new Exception(ResponseApi.ReasonPhrase);
+                
+            }
+
+            var Results = await ResponseApi.Content.ReadFromJsonAsync<StkPushResponseModel>();
+            //return Ok(Results);
+
+            var trans = new Transaction
+            {
+                Amount = transaction.Amount,
+                PhoneNumber = transaction.PhoneNumber,
+                TransDate = DateTime.Now,
+                Status = "Complete",
+                Type = "Deposit",
+                UserId = UserId
+            };
+
+         
+            await _appDbContext.Transactions.AddAsync(trans);
             await _appDbContext.SaveChangesAsync();
             return true;
         }
@@ -35,7 +127,7 @@ public class TransactionRepo : ITransactionRepo
             throw ex;
         }
     }
-    public async Task<List<Transaction>> GetTransaction(Transaction transaction, int UserId)
+    public async Task<List<Transaction>> GetTransaction(int UserId)
     {
         try
         {
@@ -49,16 +141,22 @@ public class TransactionRepo : ITransactionRepo
             throw ex;
         }
     }
-    Task<bool> ITransactionRepo.SetReminder(Transaction transaction, int UserId) => throw new NotImplementedException();
-    public async Task<bool> WithDraw(Transaction transaction, int UserId)
+    public async Task<bool> SetReminder(Transaction transaction, int UserId) => throw new NotImplementedException();
+    public async Task<bool> WithDraw(TransactionDto transaction, int UserId)
     {
         try
         {
-            transaction.TransDate = DateTime.Now;
-            transaction.Status = "Complete";
-            transaction.Type = "Withdraw";
-            transaction.UserId = UserId;
-            await _appDbContext.Transactions.AddAsync(transaction);
+            var trans = new Transaction
+            {
+                Amount = transaction.Amount,
+                PhoneNumber = transaction.PhoneNumber,
+                TransDate = DateTime.Now,
+                Status = "Complete",
+                Type = "Withdraw",
+                UserId = UserId
+            };
+           
+            await _appDbContext.Transactions.AddAsync(trans);
             await _appDbContext.SaveChangesAsync();
             return true;
         }
