@@ -13,5 +13,5 @@ public interface IAuthentication
     Task<LoginResponseDto> LoginUser();
     Task<User> GetUserById(Guid Id);
     Task<User> GetUserByEmail(string Email);
-    Task<List<User>> GetUsers();
+    Task<List<User?>> GetUsers();
 }

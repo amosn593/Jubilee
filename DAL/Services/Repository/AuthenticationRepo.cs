@@ -33,7 +33,24 @@ public class AuthenticationRepo : IAuthentication
         }
     }
     public Task<User> GetUserById(Guid Id) => throw new NotImplementedException();
-    public Task<List<User>> GetUsers() => throw new NotImplementedException();
+    public Task<List<User?>> GetUsers()
+    {
+        try
+        {
+            var Users = _appDbContext.Users
+                .OrderBy(x => x.Id)
+                .Include(x => x.Beneficiaries)
+                .ToListAsync();
+            return Users;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error occured while fetching users");
+            throw;
+        }   
+    }
+
+
     public Task<LoginResponseDto> LoginUser() => throw new NotImplementedException();
     public async Task<User> RegisterUser(User RegisterUser)
     {

@@ -100,8 +100,7 @@ public class TransactionRepo : ITransactionRepo
             }
 
             var Results = await ResponseApi.Content.ReadFromJsonAsync<StkPushResponseModel>();
-            //return Ok(Results);
-
+            
             var trans = new Transaction
             {
                 Amount = transaction.Amount,
@@ -140,11 +139,12 @@ public class TransactionRepo : ITransactionRepo
     {
         try
         {
-            var TimeToFire = DateTime.UtcNow.AddSeconds(5);
+            var TimeToFire = transactionDto.StartDate.AddDays(transactionDto.Frequency);
+
             var TimeOffset = new DateTimeOffset(TimeToFire);
 
 
-            BackgroundJob.Schedule<JobsWithDI>(x => x.WriteLogMessage("Scheduled Job Triggered"), TimeOffset);
+            BackgroundJob.Schedule(() => RunReminder(transactionDto, UserId), TimeSpan.FromDays(transactionDto.Frequency));
 
             return true;
         }

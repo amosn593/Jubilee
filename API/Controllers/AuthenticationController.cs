@@ -24,30 +24,20 @@ public class AuthenticationController : ControllerBase
     }
 
     [HttpPost("Register")]
-    public async Task<IActionResult> RegisterUser(RegisterUserDto registerUser)
+    public async Task<IActionResult> RegisterUser(User user)
     {
         try
         {
-            var newUser = new User()
-            {
-                
-                FirstName = registerUser.FirstName,
-                LastName = registerUser.LastName,
-                Email = registerUser.Email,
-                PhoneNumber = registerUser.PhoneNumber,
-                IdNumber = registerUser.IdNumber,
-                KRAPin = registerUser.KRAPin,
-                Password = registerUser.Password
-            };
-            newUser.Password = BCrypt.Net.BCrypt.HashPassword(registerUser.Password);
+            
+            user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
 
 
 
-            var checkEmail = await _Authentication.GetUserByEmail(registerUser.Email);
+            var checkEmail = await _Authentication.GetUserByEmail(user.Email);
 
             if(checkEmail == null)
             {
-                var result = await _Authentication.RegisterUser(newUser);
+                var result = await _Authentication.RegisterUser(user);
                 _response.Result = result;
                 _response.Success = true;
 
@@ -55,7 +45,7 @@ public class AuthenticationController : ControllerBase
             }
             else
             {
-                _response.Error = $"User with {registerUser.Email} exists";
+                _response.Error = $"User with {user.Email} exists";
                 return BadRequest(_response);
             }
 
@@ -63,8 +53,7 @@ public class AuthenticationController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex.Message, "Error registering user");
-            throw;
+            return BadRequest(ex.Message);
         }
 
     }
@@ -111,5 +100,19 @@ public class AuthenticationController : ControllerBase
             throw;
         }
 
+    }
+
+    [HttpGet("GetUsers")]
+    public async Task<IActionResult> GetUsers()
+    {
+        try
+        {
+            var results = await _Authentication.GetUsers();
+            return Ok(results);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }
