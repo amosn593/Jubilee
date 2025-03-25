@@ -56,6 +56,14 @@ public class AuthenticationRepo : IAuthentication
     {
         try
         {
+            RegisterUser.InvestmentProducts = System.Text.Json.JsonSerializer.Serialize(
+                    RegisterUser.InvestmentProductsDto
+                );
+
+            RegisterUser.PreviousInvestments = System.Text.Json.JsonSerializer.Serialize(
+                    RegisterUser.PreviousInvestmentsDto
+                );
+
             _appDbContext.Users.Add(RegisterUser);
             await _appDbContext.SaveChangesAsync();
             return RegisterUser ;

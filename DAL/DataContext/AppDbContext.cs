@@ -20,4 +20,6 @@ public class AppDbContext : DbContext
     public DbSet<Beneficiary> Beneficiaries { get; set; }
     public DbSet<Transaction> Transactions { get; set; }
     public DbSet<SMSConfigModel> SMSConfigModels { get; set; }
+    public DbSet<Bank> Banks { get; set; }
+    public DbSet<Branch> Branches { get; set; }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,8 +25,12 @@ public class User
     public string? Occupation { get; set; }
     public string? AgeBracket { get; set; }
     public string? InvestmentPeriod { get; set; }
+    [NotMapped]
+    public IEnumerable<string> PreviousInvestmentsDto { get; set; } = [];
     public string? PreviousInvestments { get; set; }
     public string? UnderstandingInvestments { get; set; }
+    [NotMapped]
+    public IEnumerable<string> InvestmentProductsDto { get; set; } = [];
     public string? InvestmentProducts { get; set; }
     public string? SourceOfFunds { get; set; }
     public string? BankName { get; set; }
