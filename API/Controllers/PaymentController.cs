@@ -34,7 +34,7 @@ public class PaymentController : ControllerBase
 
     // GET api/<PaymentController>/5
     [HttpPost("WithDraw/{UserId}")]
-    public async Task<IActionResult> WithDraw([FromBody] TransactionDto transaction, int UserId)
+    public async Task<IActionResult> WithDraw([FromBody] WithdrawDto transaction, int UserId)
     {
         try
         {
@@ -54,6 +54,20 @@ public class PaymentController : ControllerBase
         try
         {
             var Results = await _transaction.GetTransaction(UserId);
+            return Ok(Results);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpGet("GetAllTransactions")]
+    public async Task<IActionResult> GetAllTransactions()
+    {
+        try
+        {
+            var Results = await _transaction.GetAllTransaction();
             return Ok(Results);
         }
         catch (Exception ex)

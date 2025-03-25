@@ -16,3 +16,11 @@ public class TransactionDto
     public int Frequency { get; set; } = 7;
     public DateTime StartDate { get; set; } = DateTime.Now;
 }
+
+public class WithdrawDto
+{
+    [Column(TypeName = "decimal(18, 2)")]
+    public decimal Amount { get; set; } = 0;
+    public long? PhoneNumber { get; set; }
+    
+}

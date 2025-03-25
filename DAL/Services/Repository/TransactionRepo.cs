@@ -114,7 +114,11 @@ public class TransactionRepo : ITransactionRepo
 
          
             await _appDbContext.Transactions.AddAsync(trans);
+
             await _appDbContext.SaveChangesAsync();
+
+            await SetReminder(transaction, UserId);
+
             return true;
         }
         catch (Exception ex)
@@ -154,7 +158,7 @@ public class TransactionRepo : ITransactionRepo
             return false;
         }
     }
-    public async Task<bool> WithDraw(TransactionDto transaction, int UserId)
+    public async Task<bool> WithDraw(WithdrawDto transaction, int UserId)
     {
         try
         {
@@ -199,6 +203,21 @@ public class TransactionRepo : ITransactionRepo
                 .ToListAsync();
 
             return Results;
+        }
+        catch(Exception ex)
+        {
+            throw ex;
+        }
+    }
+
+    public async Task<List<Transaction>> GetAllTransaction()
+    {
+        try
+        {
+            var result = await _appDbContext.Transactions
+                .OrderBy(x => x.TransDate)
+                .ToListAsync();
+            return result;
         }
         catch(Exception ex)
         {

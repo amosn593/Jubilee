@@ -7,6 +7,7 @@ using DOMAIN.Models;
 using DOMAIN.Utilities;
 using Hangfire;
 using Hangfire.MySql;
+using HangfireBasicAuthenticationFilter;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Scalar.AspNetCore;
@@ -79,10 +80,25 @@ else
     app.MapScalarApiReference();
 }
 
-    app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    DashboardTitle = "Hangfire Dashboard",
+    DarkModeEnabled = false,
+    DisplayStorageConnectionString = false,
+    Authorization = new[]
+    {
+        new HangfireCustomBasicAuthenticationFilter
+        {
+            User = "Admin",
+            Pass = "Admin"
+        }
+    }
+});
 
 app.Run();
