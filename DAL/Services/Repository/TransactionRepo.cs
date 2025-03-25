@@ -132,6 +132,7 @@ public class TransactionRepo : ITransactionRepo
         {
             var result = await _appDbContext.Transactions
                 .OrderBy(x => x.TransDate)
+                .Include(x => x.user)
                 .Where(x => x.UserId == UserId).ToListAsync();
             return result;
         }
@@ -216,6 +217,7 @@ public class TransactionRepo : ITransactionRepo
         {
             var result = await _appDbContext.Transactions
                 .OrderBy(x => x.TransDate)
+                .Include(x => x.user)
                 .ToListAsync();
             return result;
         }
