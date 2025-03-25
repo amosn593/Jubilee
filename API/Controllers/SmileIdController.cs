@@ -36,7 +36,7 @@ public class SmileIdController : ControllerBase
             {
                 //write contents to file
                 var mybody = JsonConvert.DeserializeObject<SmileIDCallBackResponse>(body);
-                _smile.WriteObjectToFile2(mybody);
+                _smile.WriteObjectToFile(mybody);
                 return Ok(body);
             }
 
@@ -63,8 +63,8 @@ public class SmileIdController : ControllerBase
             if (!string.IsNullOrEmpty(body))
             {
                 //write contents to file
-                var mybody = JsonConvert.DeserializeObject(body);
-                _smile.WriteObjectToFile2(mybody);
+                var mybody = JsonConvert.DeserializeObject<SmileIDCallBackResponse>(body);
+                _smile.WriteObjectToFile(mybody);
                 return Ok(body);
             }
 
