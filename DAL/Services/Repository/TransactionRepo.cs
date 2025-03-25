@@ -78,6 +78,7 @@ public class TransactionRepo : ITransactionRepo
                 PartyB = _options.BusinessShortCode,
                 BusinessShortCode = _options.BusinessShortCode,
                 PartyA = transaction.PhoneNumber,
+                PhoneNumber = transaction.PhoneNumber,
             };
 
             var plainTextBytes = Encoding.UTF8.GetBytes(stkPush.BusinessShortCode + $"{_options.PassKey}" + stkPush.Timestamp);

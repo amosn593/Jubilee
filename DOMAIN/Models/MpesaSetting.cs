@@ -30,8 +30,8 @@ public class StkPushModel
     public string? Timestamp { get; set; } = DateTime.Now.ToString("yyyyMMddHHmmss");
     public string? TransactionType { get; set; } = "CustomerPayBillOnline";
     public int? Amount { get; set; } = 1;
-    public long? PartyA { get; set; } = 254702240787;
-    public long? PartyB { get; set; } = null;
+    public long? PartyA { get; set; } = 0; // 254702240787;
+    public long? PartyB { get; set; } = 0; // null;
     public long? PhoneNumber { get; set; } = 254702240787;
     public string? CallBackURL { get; set; } = "https://fpnqnd5g-7299.uks1.devtunnels.ms/api/Mobile/StkPushCallBackUrl";
     public string? AccountReference { get; set; } = "C#API";
