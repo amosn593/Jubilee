@@ -1,7 +1,9 @@
 ﻿using DOMAIN.Interface;
 using DOMAIN.Models;
 using DOMAIN.Models.Dtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -34,7 +36,7 @@ public class SmileIdController : ControllerBase
             {
                 //write contents to file
                 var mybody = JsonConvert.DeserializeObject<SmileIDCallBackResponse>(body);
-                _user.WriteObjectToFile(mybody);
+                _smile.WriteObjectToFile2(mybody);
                 return Ok(body);
             }
 
@@ -62,7 +64,7 @@ public class SmileIdController : ControllerBase
             {
                 //write contents to file
                 var mybody = JsonConvert.DeserializeObject(body);
-                _user.WriteObjectToFile2(mybody);
+                _smile.WriteObjectToFile2(mybody);
                 return Ok(body);
             }
 
@@ -81,7 +83,7 @@ public class SmileIdController : ControllerBase
     {
         try
         {
-            var body = _user.ReadObjectFromFile(timestamp);
+            var body = _smile.ReadObjectFromFile(timestamp);
             return Ok(body);
 
         }
