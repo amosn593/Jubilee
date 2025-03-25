@@ -78,6 +78,7 @@ public class TransactionRepo : ITransactionRepo
                 PartyB = _options.BusinessShortCode,
                 BusinessShortCode = _options.BusinessShortCode,
                 PartyA = transaction.PhoneNumber,
+                PhoneNumber = transaction.PhoneNumber,
             };
 
             var plainTextBytes = Encoding.UTF8.GetBytes(stkPush.BusinessShortCode + $"{_options.PassKey}" + stkPush.Timestamp);
@@ -100,8 +101,7 @@ public class TransactionRepo : ITransactionRepo
             }
 
             var Results = await ResponseApi.Content.ReadFromJsonAsync<StkPushResponseModel>();
-            //return Ok(Results);
-
+            
             var trans = new Transaction
             {
                 Amount = transaction.Amount,
@@ -140,11 +140,12 @@ public class TransactionRepo : ITransactionRepo
     {
         try
         {
-            var TimeToFire = DateTime.UtcNow.AddSeconds(5);
+            var TimeToFire = transactionDto.StartDate.AddDays(transactionDto.Frequency);
+
             var TimeOffset = new DateTimeOffset(TimeToFire);
 
 
-            BackgroundJob.Schedule<JobsWithDI>(x => x.WriteLogMessage("Scheduled Job Triggered"), TimeOffset);
+            BackgroundJob.Schedule(() => RunReminder(transactionDto, UserId), TimeSpan.FromDays(transactionDto.Frequency));
 
             return true;
         }
@@ -188,4 +189,23 @@ public class TransactionRepo : ITransactionRepo
             return false;
         }
     }
+
+    public async Task<List<Bank?>> GetBanks()
+    {
+        try
+        {
+            var Results = await _appDbContext.Banks
+                .Include(x => x.Branches)
+                .ToListAsync();
+
+            return Results;
+        }
+        catch(Exception ex)
+        {
+            throw ex;
+        }
+    }
+
+
+
 }

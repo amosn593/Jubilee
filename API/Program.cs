@@ -1,5 +1,6 @@
 ﻿using System;
 using DAL.DataContext;
+using DAL.Services;
 using DAL.Services.Mail;
 using DAL.Services.Repository;
 using DOMAIN.Interface;
@@ -27,6 +28,8 @@ builder.Services.AddHttpClient("Mpesa", httpClient =>
 builder.Services.Configure<MpesaSetting>(builder.Configuration.GetSection("MpesaSetting"));
 builder.Services.AddScoped<IAuthentication, AuthenticationRepo>();
 builder.Services.AddScoped<Itoken, JwtServices>();
+builder.Services.AddTransient<ISmileIdService, SmileIdService>();
+
 builder.Services.AddScoped<IEmail, EmailServices>();
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("JwtOptions"));
 

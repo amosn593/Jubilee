@@ -62,6 +62,20 @@ public class PaymentController : ControllerBase
         }
     }
 
+    [HttpGet("GetBanks")]
+    public async Task<IActionResult> GetBanks()
+    {
+        try
+        {
+            var Results = await _transaction.GetBanks();
+            return Ok(Results);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
     // PUT api/<PaymentController>/5
     //[HttpPut("{id}")]
     //public void Put(int id, [FromBody] string value)

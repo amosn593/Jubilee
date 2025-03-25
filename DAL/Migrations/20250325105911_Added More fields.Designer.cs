@@ -4,6 +4,7 @@ using DAL.DataContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250325105911_Added More fields")]
+    partial class AddedMorefields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -47,28 +50,6 @@ namespace DAL.Migrations
                     b.ToTable("AccessTokenResponses");
                 });
 
-            modelBuilder.Entity("DOMAIN.Models.Bank", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("Active")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("ShortName")
-                        .HasColumnType("longtext");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Banks");
-                });
-
             modelBuilder.Entity("DOMAIN.Models.Beneficiary", b =>
                 {
                     b.Property<int>("Id")
@@ -94,33 +75,6 @@ namespace DAL.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Beneficiaries");
-                });
-
-            modelBuilder.Entity("DOMAIN.Models.Branch", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("Active")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<int?>("BankId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("ShortName")
-                        .HasColumnType("longtext");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BankId");
-
-                    b.ToTable("Branches");
                 });
 
             modelBuilder.Entity("DOMAIN.Models.SMSConfigModel", b =>
@@ -321,13 +275,6 @@ namespace DAL.Migrations
                         .HasForeignKey("UserId");
                 });
 
-            modelBuilder.Entity("DOMAIN.Models.Branch", b =>
-                {
-                    b.HasOne("DOMAIN.Models.Bank", null)
-                        .WithMany("branches")
-                        .HasForeignKey("BankId");
-                });
-
             modelBuilder.Entity("DOMAIN.Models.Transaction", b =>
                 {
                     b.HasOne("DOMAIN.Models.User", "user")
@@ -335,11 +282,6 @@ namespace DAL.Migrations
                         .HasForeignKey("UserId");
 
                     b.Navigation("user");
-                });
-
-            modelBuilder.Entity("DOMAIN.Models.Bank", b =>
-                {
-                    b.Navigation("branches");
                 });
 
             modelBuilder.Entity("DOMAIN.Models.User", b =>

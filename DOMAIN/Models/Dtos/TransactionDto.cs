@@ -13,6 +13,6 @@ public class TransactionDto
     public long? PhoneNumber { get; set; }
     public int? UserId { get; set; }
     public bool SetReminders { get; set; } = false;
-    public int? Frequency { get; set; } = 7;
-    public DateTime? StartDate { get; set; } = DateTime.Now;
+    public int Frequency { get; set; } = 7;
+    public DateTime StartDate { get; set; } = DateTime.Now;
 }
