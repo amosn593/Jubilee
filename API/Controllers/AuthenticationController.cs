@@ -15,12 +15,15 @@ public class AuthenticationController : ControllerBase
     private readonly ILogger<AuthenticationController> _logger;
     private readonly ResponseDto _response;
     private readonly Itoken _token;
-    public AuthenticationController(IAuthentication authentication,Itoken token, ILogger<AuthenticationController> logger)
+    private readonly IEmail _email;
+    public AuthenticationController(IAuthentication authentication,Itoken token,IEmail email,
+        ILogger<AuthenticationController> logger)
     {
         _logger = logger;
         _Authentication = authentication;
         _response = new ResponseDto();
         _token= token;
+        _email= email;
     }
 
     [HttpPost("Register")]
@@ -34,12 +37,14 @@ public class AuthenticationController : ControllerBase
 
 
             var checkEmail = await _Authentication.GetUserByEmail(user.Email);
+            var otp = GenerateOtp();
 
-            if(checkEmail == null)
+            if (checkEmail == null)
             {
                 var result = await _Authentication.RegisterUser(user);
                 _response.Result = result;
                 _response.Success = true;
+                await _email.SendEmail(user.Email, "Registration OTP", $"Welcome {user.FirstName} {Environment.NewLine} Your otp is: {otp}");
 
                 return Ok(_response);
             }
@@ -80,6 +85,7 @@ public class AuthenticationController : ControllerBase
                 }
 
                 var token = _token.GenerateToken(checkUser);
+                var otp = GenerateOtp();
 
                 var loggedUser = new LoginResponseDto()
                 {
@@ -89,7 +95,7 @@ public class AuthenticationController : ControllerBase
                 };
                 _response.Success = true;
                 _response.Result = loggedUser;
-
+                await _email.SendEmail(checkUser.Email, "Login confirmation", $"Welcome {checkUser.FirstName} {Environment.NewLine} Your otp is: {otp}");
                 return Ok(_response);
             }
 
@@ -114,5 +120,10 @@ public class AuthenticationController : ControllerBase
         {
             return BadRequest(ex.Message);
         }
+    }
+    private string GenerateOtp()
+    {
+        Random random = new Random();
+        return random.Next(100000, 999999).ToString();
     }
 }
