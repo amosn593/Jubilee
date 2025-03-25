@@ -14,4 +14,5 @@ public interface ITransactionRepo
     Task<bool> SetReminder(TransactionDto transactionDto, int UserId);
     Task<bool> RunReminder(TransactionDto transactionDto, int UserId);
     Task<List<Transaction>> GetTransaction(int UserId);
+    Task<List<Bank?>> GetBanks();
 }

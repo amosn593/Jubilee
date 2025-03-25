@@ -13,7 +13,7 @@ public class Bank
     public string? Name { get; set; }
     public string? ShortName { get; set; }
     public bool Active { get; set; }
-    public List<Branch> branches { get; set; } = [];
+    public List<Branch> Branches { get; set; } = [];
 }
 
 public class Branch

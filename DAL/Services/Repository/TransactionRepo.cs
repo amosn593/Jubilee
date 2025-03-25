@@ -188,4 +188,23 @@ public class TransactionRepo : ITransactionRepo
             return false;
         }
     }
+
+    public async Task<List<Bank?>> GetBanks()
+    {
+        try
+        {
+            var Results = await _appDbContext.Banks
+                .Include(x => x.Branches)
+                .ToListAsync();
+
+            return Results;
+        }
+        catch(Exception ex)
+        {
+            throw ex;
+        }
+    }
+
+
+
 }
