@@ -9,19 +9,24 @@ using DOMAIN.Models;
 using DOMAIN.Models.Dtos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Org.BouncyCastle.Asn1.Crmf;
+using RestSharp;
+using Microsoft.Extensions.Logging;
 
 namespace DAL.Services.Repository;
 public class TransactionRepo : ITransactionRepo
 {
     private readonly AppDbContext _appDbContext;
+    private readonly ILogger<TransactionRepo> _logger;
     private readonly MpesaSetting _options;
     private readonly HttpClient _httpClient;
 
 
-    public TransactionRepo(AppDbContext appDbContext,
+    public TransactionRepo(AppDbContext appDbContext, ILogger<TransactionRepo> logger,
         IHttpClientFactory httpClientFactory, IOptions<MpesaSetting> options)
     {
         _appDbContext = appDbContext;
+        _logger = logger;
         _options = options.Value;
         _httpClient = httpClientFactory.CreateClient("Mpesa");
     }
@@ -145,11 +150,20 @@ public class TransactionRepo : ITransactionRepo
     {
         try
         {
-            var TimeToFire = transactionDto.StartDate.AddDays(transactionDto.Frequency);
+            if(!transactionDto.SetReminders)
+            {
+                return false;
+            }
+            if(transactionDto.Frequency == 0)
+            {
+                return false;
+            }
+            if(transactionDto.StartDate == null || transactionDto.StartDate <= DateTime.Now)
+            {
+                transactionDto.StartDate = DateTime.Now;
+            }
 
-            var TimeOffset = new DateTimeOffset(TimeToFire);
-
-
+            
             BackgroundJob.Schedule(() => RunReminder(transactionDto, UserId), TimeSpan.FromDays(transactionDto.Frequency));
 
             return true;
@@ -187,10 +201,42 @@ public class TransactionRepo : ITransactionRepo
     {
         try
         {
+            var smsConfig = await _appDbContext.SMSConfigModels.Where(x => x.SenderId == "AfricasTalking")
+                                .FirstOrDefaultAsync();
+
+            if(smsConfig == null)
+            {
+                return false;
+            }
+
+            var Link = $"https://dev-momo.tenzi.africa/api/payment/{transactionDto.UserId}/{transactionDto.PhoneNumber}/{transactionDto.Amount}";
+
+            var Message = $"Dear Customer, kindly pay for your Jubilee Investment account. Click this link, for Mpesa stk push. {Link}";
+
+
+            var apikey = Encoding.UTF8.GetString(Convert.FromBase64String(smsConfig.Apikey));
+            var smsUrl = Encoding.UTF8.GetString(Convert.FromBase64String(smsConfig.SMSURL));
+
+            var client = new RestClient(smsUrl);
+            var request = new RestRequest("/messaging", RestSharp.Method.Post);
+            request.AddHeader("Accept", "application/json");
+            request.AddHeader("apiKey", $"{apikey}");
+            request.AddHeader("content-type", "application/x-www-form-urlencoded");
+
+            request.AddParameter("from", smsConfig.FromName);
+            request.AddParameter("username", smsConfig.SenderName);
+            request.AddParameter("to", transactionDto.PhoneNumber.ToString());
+            request.AddParameter("message", Message);
+            var apiResponse = await client.ExecutePostAsync<AfTalkingSmsMessageResponse>(request);
+
+            _logger.LogWarning("Reminder Sent to 0702240787 for UserId: {UserId}, Api Response: {ApiResponse}", UserId,
+                JsonSerializer.Serialize(apiResponse));
+
             return true;
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "An error occurred while running the reminder for UserId: {UserId}", UserId);
             return false;
         }
     }

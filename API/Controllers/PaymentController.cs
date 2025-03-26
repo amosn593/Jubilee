@@ -32,6 +32,27 @@ public class PaymentController : ControllerBase
         }
     }
 
+    [HttpGet("StkDeposit/{userId}/{phonenumber}/{depositamount}")]
+    public async Task<IActionResult> StkDeposit(int userId, string phonenumber, decimal depositamount)
+    {
+        try
+        {
+            var trans = new TransactionDto
+            {
+                Amount = depositamount,
+                PhoneNumber = long.Parse(phonenumber),
+                UserId = userId
+            };
+           
+            var Results = await _transaction.Deposit(trans, userId);
+            return Ok(Results);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
     // GET api/<PaymentController>/5
     [HttpPost("WithDraw/{UserId}")]
     public async Task<IActionResult> WithDraw([FromBody] WithdrawDto transaction, int UserId)
