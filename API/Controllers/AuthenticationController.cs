@@ -1,4 +1,5 @@
-﻿using BCrypt.Net;
+﻿using System.Collections.Concurrent;
+using BCrypt.Net;
 using DOMAIN.Interface;
 using DOMAIN.Models;
 using DOMAIN.Models.Dtos;
@@ -16,6 +17,8 @@ public class AuthenticationController : ControllerBase
     private readonly ResponseDto _response;
     private readonly Itoken _token;
     private readonly IEmail _email;
+
+    private static ConcurrentDictionary<string,string> _otpStore= new ConcurrentDictionary<string,string>();
     public AuthenticationController(IAuthentication authentication,Itoken token,IEmail email,
         ILogger<AuthenticationController> logger)
     {
@@ -87,22 +90,71 @@ public class AuthenticationController : ControllerBase
                 var token = _token.GenerateToken(checkUser);
                 var otp = GenerateOtp();
 
-                var loggedUser = new LoginResponseDto()
-                {
-                    Token = token,
-                    user = checkUser
+                //store otp
+                _otpStore[checkUser.Email] = otp;
 
-                };
+                //var loggedUser = new LoginResponseDto()
+                //{
+                //    Token = token,
+                //    user = checkUser
+
+                //};
                 _response.Success = true;
-                _response.Result = loggedUser;
+                _response.Message = "OTP sent to your email. Please verify to complete";
+                //_response.Result = loggedUser;
                 await _email.SendEmail(checkUser.Email, "Login confirmation", $"Welcome {checkUser.FirstName} {Environment.NewLine} Your otp is: {otp}");
                 return Ok(_response);
+
             }
 
         }
         catch(Exception ex)
         {
             _logger.LogError(ex.Message, "Error registering user");
+            throw;
+        }
+
+    }
+    [HttpPost("VerifyOTP")]
+    public async Task<IActionResult> VerifyOTP([FromBody] OTPVerificationDto oTPVerification)
+    {
+        try
+        {
+            if(!_otpStore.TryGetValue(oTPVerification.Email, out string storedOtp))
+            {
+                _response.Error = "No OTP found. Please request a new OTP";
+                return BadRequest(_response);
+            }
+            if (storedOtp !=oTPVerification.OTP)
+            {
+                _response.Error = "Invalid OTP";
+                return BadRequest(_response);
+            }
+
+            //Retrieve user for token generation
+            var checkUser = _Authentication.GetUserByEmail(oTPVerification.Email).Result;
+
+            var token= _token.GenerateToken(checkUser);
+
+            _otpStore.TryRemove(oTPVerification.Email, out _);
+
+            var loggedUser = new LoginResponseDto()
+            {
+                Token = token,
+                user = checkUser
+
+            };
+
+            _response.Success = true;
+            _response.Message = "OTP verified. Login successful";
+            _response.Result= loggedUser;
+            return Ok(_response);
+
+
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message, "Error verifying OTP");
             throw;
         }
 
