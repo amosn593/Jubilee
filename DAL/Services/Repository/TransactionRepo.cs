@@ -209,7 +209,7 @@ public class TransactionRepo : ITransactionRepo
                 return false;
             }
 
-            var Link = $"https://dev-momo.tenzi.africa/api/payment/{transactionDto.UserId}/{transactionDto.PhoneNumber}/{transactionDto.Amount}";
+            var Link = $"https://dev-momo.tenzi.africa/api/payment/StkDeposit/{transactionDto.UserId}/{transactionDto.PhoneNumber}/{transactionDto.Amount}";
 
             var Message = $"Dear Customer, kindly pay for your Jubilee Investment account. Click this link, for Mpesa stk push. {Link}";
 
