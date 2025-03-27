@@ -74,12 +74,20 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.MapScalarApiReference();
+    app.MapScalarApiReference(options =>
+    {
+        options.Title = "Jubilee API Reference";
+        options.HideClientButton = true;
+    });
 }
 else
 {
     app.MapOpenApi();
-    app.MapScalarApiReference();
+    app.MapScalarApiReference(options =>
+    {
+        options.Title = "Jubilee API Reference";
+        options.HideClientButton = true;
+    });
 }
 
 app.UseHttpsRedirection();
